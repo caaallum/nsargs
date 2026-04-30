@@ -11,13 +11,11 @@ typedef struct {
 
 typedef struct {
     args_option_def_t defs[ARGS_MAX_OPTIONS];
-    INT32               def_count;
-
-    args_entry_t      entries[ARGS_MAX_OPTIONS];
-    INT32               entry_count;
-
-    TCHAR              positionals[ARGS_MAX_POSITIONALS][ARGS_MAX_VALUE_LEN];
-    INT32               positional_count;
+    INT32 def_count;
+    args_entry_t entries[ARGS_MAX_OPTIONS];
+    INT32 entry_count;
+    TCHAR positionals[ARGS_MAX_POSITIONALS][ARGS_MAX_VALUE_LEN];
+    INT32 positional_count;
 } args_t;
 
 //==========================================================

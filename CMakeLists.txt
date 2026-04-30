@@ -12,6 +12,8 @@ file(GLOB SRC
 
     src/args.h
     src/args.c
+    src/util.h
+    src/util.c
     src/nsargs.c
 )
 
@@ -58,6 +60,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
  
         src/nsargs.c
         src/args.c
+        src/util.c
     )
  
     add_executable(nsargs_test ${TEST_SRC})

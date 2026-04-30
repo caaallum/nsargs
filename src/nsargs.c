@@ -1,6 +1,8 @@
 #include <windows.h>
 #include <nsis/pluginapi.h>
+
 #include "args.h"
+#include "util.h"
 
 HINSTANCE g_hInstance;
 HWND g_hwndParent;
@@ -27,11 +29,12 @@ NSISFUNC(Parse) {
     EXDLL_INIT();
 
     INT32    argc = 0;
-    LPTSTR command_line = GetCommandLine();
-    MessageBox(NULL, command_line, _T("Command Line"), MB_OK);
+    WCHAR command_line_w[ARGS_MAX_VALUE_LEN];
+    
+    PTCHAR command_line = GetCommandLine();
+    tchar_to_wchar(command_line, command_line_w, lstrlen(command_line) + 1);
 
-    // TODO: Make this work with ansin command lines as well.
-    LPWSTR* argv = CommandLineToArgvW(command_line, &argc);
+    LPWSTR* argv = CommandLineToArgvW(command_line_w, &argc);
     if (!argv) {
         pushstring(TEXT("0"));
         return;
@@ -63,7 +66,6 @@ NSISFUNC(GetOption) {
     else {
         pushstring(e->value);
     }
-
 }
 
 BOOL WINAPI DllMain(HINSTANCE hInst, ULONG ul_reason_for_call, LPVOID lpReserved) {
