@@ -1,0 +1,76 @@
+name: Build
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    strategy:
+      matrix:
+        include:
+          - name: x86-unicode
+            unicode: ON
+            arch: Win32
+            triplet: x86-windows-static
+          - name: x86-ansi
+            unicode: OFF
+            arch: Win32
+            triplet: x86-windows-static
+          - name: x64-unicode
+            unicode: ON
+            arch: x64
+            triplet: x64-windows-static
+          - name: x64-ansi
+            unicode: OFF
+            arch: x64
+            triplet: x64-windows-static
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup CMake
+        uses: lukka/get-cmake@latest
+
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+
+      - name: Configure
+        run: cmake -S . -B build ^
+          -DUNICODE=${{ matrix.unicode }} ^
+          -DVCPKG_TARGET_TRIPLET=${{ matrix.triplet }} ^
+          -DCMAKE_TOOLCHAIN_FILE=${{ env.VCPKG_ROOT }}/scripts/buildsystems/vcpkg.cmake ^
+          -DCMAKE_BUILD_TYPE=Release ^
+          -A ${{ matrix.arch }}
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.name }}
+          path: build/${{ matrix.name }}
+
+  package:
+    runs-on: windows-latest
+    needs: [build]
+    steps:
+      - name: Download all builds
+        uses: actions/download-artifact@v4
+        with:
+          path: Plugin
+
+      - name: Create ZIP
+        run: powershell Compress-Archive -Path Plugin -DestinationPath nsargs-plugin.zip
+
+      - name: Upload final artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nsargs-plugin
+          path: nsargs-plugin.zip
