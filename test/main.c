@@ -7,6 +7,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include "../nsis/pluginapi.h"
+#include "../src/util.h"
 
 #define TEST_STRING_SIZE 1024
 
@@ -17,6 +18,7 @@ unsigned int  g_stringsize = TEST_STRING_SIZE;
 stack_t* g_stacktop_storage = NULL;
 stack_t** g_stacktop = &g_stacktop_storage;
 TCHAR* g_variables = g_vars_storage;
+LPTSTR g_testing_command_line = TEXT("nsargs_test.exe -o output -v");
 
 static void
 dump_stack(void) {
@@ -86,10 +88,20 @@ extern void __cdecl GetOption(HWND hwndParent, int string_size,
 // -----------------------------------------------------------------------
 // Convenience macro – calls a plugin function using the harness globals
 // -----------------------------------------------------------------------
-
 #define CALL_PLUGIN(fn) \
     fn(NULL, TEST_STRING_SIZE, g_variables, g_stacktop, NULL)
 
+// -----------------------------------------------------------------------
+// String comparison wrapper for cmocka
+// -----------------------------------------------------------------------
+#define assert_tchar_equal(expected, actual)           \
+    do {                                              \
+        CHAR exp_utf8[TEST_STRING_SIZE];                \
+        CHAR act_utf8[TEST_STRING_SIZE];                \
+        tchar_to_utf8(expected, exp_utf8, TEST_STRING_SIZE); \
+        tchar_to_utf8(actual, act_utf8, TEST_STRING_SIZE);   \
+        assert_string_equal(exp_utf8, act_utf8);     \
+    } while(0)
 
 static void
 test_args_parse(void** state) {
@@ -117,14 +129,17 @@ test_args_parse(void** state) {
     pushstring(_T("output"));
     CALL_PLUGIN(GetOption);
     popstring(result);
+    assert_tchar_equal(result, TEXT("output"));
 
     pushstring(_T("help"));
     CALL_PLUGIN(GetOption);
     popstring(result);
+    assert_tchar_equal(result, TEXT("0"));
 
     pushstring(_T("verbose"));
     CALL_PLUGIN(GetOption);
     popstring(result);
+    assert_tchar_equal(result, TEXT("1"));
 }
 
 int

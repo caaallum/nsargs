@@ -7,6 +7,11 @@
 HINSTANCE g_hInstance;
 HWND g_hwndParent;
 
+#ifdef TESTING
+extern LPTSTR g_testing_command_line;
+#define GetCommandLine() g_testing_command_line
+#endif
+
 #define NSISFUNC(_name) void __declspec(dllexport) _name( \
     HWND hwnd_parent, int string_size, TCHAR *variables,  \
     stack_t **stacktop, extra_parameters *extra)
@@ -56,7 +61,7 @@ NSISFUNC(GetOption) {
     const args_entry_t* e = args_resolve(name);
 
     if (!e || !e->present) {
-        pushstring(TEXT(""));
+        pushstring(TEXT("0"));
         return;
     }
 

@@ -66,6 +66,7 @@ if (CMAKE_BUILD_TYPE STREQUAL "Debug")
     add_executable(nsargs_test ${TEST_SRC})
  
     target_link_libraries(nsargs_test PRIVATE user32 cmocka::cmocka)
+    target_compile_definitions(nsargs_test PRIVATE -DTESTING)
  
     target_include_directories(nsargs_test PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}
